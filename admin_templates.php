@@ -515,8 +515,9 @@ if ($action == '') {
 			$result_stmt = Database::prepare("
 				SELECT `language`, `varname`, `value`
 				FROM `" . TABLE_PANEL_TEMPLATES . "`
-				WHERE `id` = :id");
+				WHERE `adminid` = :adminid AND `id` = :id");
 			Database::pexecute($result_stmt, [
+				'adminid' => $userinfo['adminid'],
 				'id' => $mailbodyid
 			]);
 			$result = $result_stmt->fetch(PDO::FETCH_ASSOC);
