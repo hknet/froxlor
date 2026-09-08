@@ -70,7 +70,7 @@ class Cronjobs extends ApiCommand implements ResourceEntity
 	 */
 	public function get()
 	{
-		if ($this->isAdmin()) {
+		if ($this->isAdmin() && $this->getUserDetail('change_serversettings') == 1) {
 			$id = $this->getParam('id');
 
 			$result_stmt = Database::prepare("
@@ -176,7 +176,7 @@ class Cronjobs extends ApiCommand implements ResourceEntity
 	 */
 	public function listing()
 	{
-		if ($this->isAdmin()) {
+		if ($this->isAdmin() && $this->getUserDetail('change_serversettings') == 1) {
 			$this->logger()->logAction(FroxlorLogger::ADM_ACTION, LOG_INFO, "[API] list cronjobs");
 			$query_fields = [];
 			$result_stmt = Database::prepare("
@@ -203,7 +203,7 @@ class Cronjobs extends ApiCommand implements ResourceEntity
 	 */
 	public function listingCount()
 	{
-		if ($this->isAdmin()) {
+		if ($this->isAdmin() && $this->getUserDetail('change_serversettings') == 1) {
 			$query_fields = [];
 			$result_stmt = Database::prepare("
 				SELECT COUNT(*) as num_crons FROM `" . TABLE_PANEL_CRONRUNS . "` `c`

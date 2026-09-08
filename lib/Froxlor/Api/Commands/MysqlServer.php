@@ -236,6 +236,13 @@ class MysqlServer extends ApiCommand implements ResourceEntity
 	 */
 	public function listing()
 	{
+		// a reseller (admin-type account without change_serversettings) is not permitted to see mysql
+		// server configuration at all - same boundary the admin UI and the write commands (validateAccess())
+		// already enforce; customers are handled further down via their own allowed_mysqlserver restriction
+		if ($this->isAdmin() && $this->getUserDetail('change_serversettings') == 0) {
+			throw new Exception("You cannot access this resource", 405);
+		}
+
 		$sql = [];
 		$sql_root = [];
 		// get all data from lib/userdata
@@ -275,6 +282,11 @@ class MysqlServer extends ApiCommand implements ResourceEntity
 	 */
 	public function listingCount()
 	{
+		// see listing() - a reseller is not permitted to see mysql server configuration at all
+		if ($this->isAdmin() && $this->getUserDetail('change_serversettings') == 0) {
+			throw new Exception("You cannot access this resource", 405);
+		}
+
 		if ($this->isAdmin() == false) {
 			$allowed_mysqls = json_decode($this->getUserDetail('allowed_mysqlserver'), true);
 			if ($allowed_mysqls) {
@@ -302,6 +314,11 @@ class MysqlServer extends ApiCommand implements ResourceEntity
 	 */
 	public function get()
 	{
+		// see listing() - a reseller is not permitted to see mysql server configuration at all
+		if ($this->isAdmin() && $this->getUserDetail('change_serversettings') == 0) {
+			throw new Exception("You cannot access this resource", 405);
+		}
+
 		$id = (int)$this->getParam('id', true, -1);
 		$dn_optional = $id >= 0;
 		$dbserver = (int)$this->getParam('dbserver', $dn_optional, -1);
