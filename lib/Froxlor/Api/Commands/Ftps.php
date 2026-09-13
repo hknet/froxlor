@@ -102,6 +102,12 @@ class Ftps extends ApiCommand implements ResourceEntity
 			$ftpdomain = $this->getParam('ftp_domain', true, '');
 
 			$additional_members = $this->getParam('additional_members', true, []);
+			foreach ($additional_members as $index => $add_member) {
+				// members end up comma-joined, unsanitized, in the NSS group-file line built by
+				// Extrausers::generateFile() - reject anything but a plain username here so a
+				// newline/colon/comma can't inject or split a line in that root-owned file
+				$additional_members[$index] = Validate::validate($add_member, 'additional_members', '/^[a-zA-Z0-9][a-zA-Z0-9@.\-_]*\$?$/D', '', [], true);
+			}
 
 			// validation
 			$password = Validate::validate($password, 'password', '', '', [], true);

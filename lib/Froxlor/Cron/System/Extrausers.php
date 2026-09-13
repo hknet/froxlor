@@ -100,7 +100,7 @@ class Extrausers
 					}
 					break;
 				case 'group':
-					$line = $u['groupname'] . ':' . $u['password'] . ':' . $u['gid'] . ':' . $u['members'] . PHP_EOL;
+					$line = $u['groupname'] . ':' . $u['password'] . ':' . $u['gid'] . ':' . self::cleanMembers($u['members']) . PHP_EOL;
 					break;
 				case 'shadow':
 					$line = $u['username'] . ':' . $u['password'] . ':' . floor(time() / 86400 - 1) . ':0:99999:7:::' . PHP_EOL;
@@ -131,6 +131,17 @@ class Extrausers
 	private static function cleanString($string = null)
 	{
 		$allowed = "/[^a-z0-9\\.\\-\\_\\ ]/i";
+		return preg_replace($allowed, "", $string);
+	}
+
+	/**
+	 * defense-in-depth for the group-file 'members' field: same idea as cleanString() but also
+	 * keeps ',' and '@', since members is a comma-joined list of (possibly domain-qualified)
+	 * usernames - the actual validation of each member happens in Ftps::add()
+	 */
+	private static function cleanMembers($string = null)
+	{
+		$allowed = "/[^a-z0-9\\.\\-\\_\\@\\,]/i";
 		return preg_replace($allowed, "", $string);
 	}
 }
