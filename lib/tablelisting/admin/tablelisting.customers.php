@@ -136,6 +136,7 @@ return [
 			'c.theme' => [
 				'label' => lng('panel.theme'),
 				'field' => 'theme',
+				'callback' => [Text::class, 'escape'],
 			],
 			'c.logviewenabled' => [
 				'label' => lng('admin.logviewenabled'),

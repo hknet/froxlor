@@ -34,6 +34,7 @@ use Froxlor\Idna\IdnaWrapper;
 use Froxlor\Language;
 use Froxlor\Settings;
 use Froxlor\System\Crypt;
+use Froxlor\UI\Panel\UI;
 use Froxlor\UI\Response;
 use Froxlor\User;
 use Froxlor\Validate\Validate;
@@ -622,7 +623,12 @@ class Admins extends ApiCommand implements ResourceEntity
 					$def_language = Settings::Get('panel.standardlanguage');
 				}
 				$custom_notes = Validate::validate(str_replace("\r\n", "\n", $custom_notes ?? ""), 'custom_notes', Validate::REGEX_CONF_TEXT, '', [], true);
+				// only allow known, installed themes - the value is rendered unescaped in the admin
+				// listing's optional Theme column, so anything else must never reach the DB
 				$theme = Validate::validate($theme, 'theme', '', '', [], true);
+				if (!empty($theme) && !isset(UI::getThemes()[$theme])) {
+					$theme = '';
+				}
 				$password = Validate::validate($password, 'password', '', '', [], true);
 
 				if (Settings::Get('system.mail_quota_enabled') != '1') {

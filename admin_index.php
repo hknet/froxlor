@@ -265,16 +265,18 @@ if ($page == 'overview') {
 		} elseif (Request::post('send') == 'changetheme') {
 			if (Settings::Get('panel.allow_theme_change_admin') == 1) {
 				$theme = Validate::validate(Request::post('theme'), 'theme');
-				try {
-					Admins::getLocal($userinfo, [
-						'id' => $userinfo['adminid'],
-						'theme' => $theme
-					])->update();
-				} catch (Exception $e) {
-					Response::dynamicError($e->getMessage());
-				}
+				if (isset(UI::getThemes()[$theme])) {
+					try {
+						Admins::getLocal($userinfo, [
+							'id' => $userinfo['adminid'],
+							'theme' => $theme
+						])->update();
+					} catch (Exception $e) {
+						Response::dynamicError($e->getMessage());
+					}
 
-				$log->logAction(FroxlorLogger::ADM_ACTION, LOG_NOTICE, "changed his/her theme to '" . $theme . "'");
+					$log->logAction(FroxlorLogger::ADM_ACTION, LOG_NOTICE, "changed his/her theme to '" . $theme . "'");
+				}
 			}
 			Response::redirectTo($filename);
 		} elseif (Request::post('send') == 'changelanguage') {

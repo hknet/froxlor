@@ -103,6 +103,7 @@ return [
 			'theme' => [
 				'label' => lng('panel.theme'),
 				'field' => 'theme',
+				'callback' => [Text::class, 'escape'],
 			],
 			'api_allowed' => [
 				'label' => lng('usersettings.api_allowed.title'),

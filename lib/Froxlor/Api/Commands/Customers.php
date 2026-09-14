@@ -38,6 +38,7 @@ use Froxlor\Language;
 use Froxlor\Settings;
 use Froxlor\System\Cronjob;
 use Froxlor\System\Crypt;
+use Froxlor\UI\Panel\UI;
 use Froxlor\UI\Response;
 use Froxlor\User;
 use Froxlor\Validate\Validate;
@@ -1223,7 +1224,12 @@ class Customers extends ApiCommand implements ResourceEntity
 			$def_language = Settings::Get('panel.standardlanguage');
 		}
 
+		// only allow known, installed themes - the value is rendered unescaped in the admin
+		// customer listing's optional Theme column, so anything else must never reach the DB
 		$theme = Validate::validate($theme, 'theme', '', '', [], true);
+		if (!empty($theme) && !isset(UI::getThemes()[$theme])) {
+			$theme = '';
+		}
 
 		if (Settings::Get('system.mail_quota_enabled') != '1') {
 			$email_quota = -1;

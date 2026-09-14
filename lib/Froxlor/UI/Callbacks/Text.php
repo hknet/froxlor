@@ -95,6 +95,16 @@ class Text
 		return wordwrap(htmlspecialchars($attributes['data']), 100, '<br>', true);
 	}
 
+	/**
+	 * plain-field columns are rendered via {{ td.data|raw }} in table.html.twig, so any column
+	 * carrying user-controlled text (as opposed to internally-built HTML/macros) needs this as
+	 * its callback instead of relying on the default un-escaped pass-through
+	 */
+	public static function escape(array $attributes): string
+	{
+		return htmlspecialchars((string)$attributes['data']);
+	}
+
 	public static function customerNoteDetailModal(array $attributes): array
 	{
 		$note = $attributes['fields']['custom_notes'] ?? '';
