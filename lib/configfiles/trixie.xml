@@ -2450,6 +2450,10 @@ DelayEngine off
 			</service>
 			<!-- System tools/services -->
 			<service type="system" title="{{lng.admin.configfiles.etc}}">
+				<!-- POSIX ACL tools -->
+				<daemon name="acl" title="POSIX ACL tools">
+					<install><![CDATA[apt-get install acl]]></install>
+				</daemon>
 				<!-- Webalizer -->
 				<daemon name="webalizer"
 					title="Webalizer (traffic analyzer)">
@@ -2526,6 +2530,7 @@ aliases:     files
   sharedscripts
   postrotate
   <WEBSERVER_RELOAD_CMD> > /dev/null 2>&1 || true
+  php {{const.install_dir}}bin/froxlor-cli froxlor:log-acls > /dev/null 2>&1 || true
   endscript
 }
 ]]>

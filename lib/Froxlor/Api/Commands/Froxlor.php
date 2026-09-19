@@ -152,6 +152,9 @@ class Froxlor extends ApiCommand
 				Cronjob::inserttask(TaskId::REBUILD_DNS);
 				// cron.d file
 				Cronjob::inserttask(TaskId::REBUILD_CRON);
+				// an import can change the logfile ACL policy or the logfile
+				// directory, neither of which goes through the settings form
+				Cronjob::inserttask(TaskId::REBUILD_LOG_ACLS);
 				return $this->response(true);
 			} catch (Exception $e) {
 				throw new Exception($e->getMessage(), 406);

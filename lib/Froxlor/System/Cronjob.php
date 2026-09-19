@@ -214,6 +214,9 @@ class Cronjob
 			INSERT INTO `" . TABLE_PANEL_TASKS . "` SET `type` = :type, `data` = :data
 		");
 
+		// Global reconciliation tasks carry no payload and are deduplicated. ACL
+		// lifecycle hooks can therefore request convergence repeatedly without
+		// producing redundant task rows.
 		if ($type == TaskId::REBUILD_VHOST || $type == TaskId::REBUILD_DNS || $type == TaskId::CREATE_FTP || $type == TaskId::REBUILD_RSPAMD || $type == TaskId::CREATE_QUOTA || $type == TaskId::REBUILD_CRON || $type == TaskId::UPDATE_LE_SERVICES || $type == TaskId::REBUILD_NSSUSERS) {
 			// 4 = bind -> if bind disabled -> no task
 			if ($type == TaskId::REBUILD_DNS && Settings::Get('system.bind_enable') == '0') {
@@ -271,6 +274,36 @@ class Cronjob
 			$data = json_encode($data);
 			Database::pexecute($ins_stmt, [
 				'type' => TaskId::DELETE_EMAIL_DATA,
+				'data' => $data
+			]);
+		} elseif ($type == TaskId::REBUILD_LOG_ACLS) {
+			// A customer id limits reconciliation to that customer, so a single
+			// eligibility change does not converge every customer on the system.
+			// Without one the task means "reconcile everything", which is what a
+			// global setting change requires.
+			$data = '';
+			if (isset($params[0]) && (int)$params[0] > 0) {
+				$data = json_encode(['customerid' => (int)$params[0]]);
+			}
+			// Deduplicate per payload: repeated changes to the same customer, or
+			// repeated global requests, still collapse into a single row. A
+			// pending global task also supersedes per-customer ones.
+			$del_stmt = Database::prepare("
+				DELETE FROM `" . TABLE_PANEL_TASKS . "` WHERE `type` = :type AND (`data` = :data OR `data` = '')
+			");
+			Database::pexecute($del_stmt, [
+				'type' => $type,
+				'data' => $data
+			]);
+			if ($data === '') {
+				// A global request makes any queued per-customer task redundant.
+				$del_all_stmt = Database::prepare("
+					DELETE FROM `" . TABLE_PANEL_TASKS . "` WHERE `type` = :type
+				");
+				Database::pexecute($del_all_stmt, ['type' => $type]);
+			}
+			Database::pexecute($ins_stmt, [
+				'type' => $type,
 				'data' => $data
 			]);
 		} elseif ($type == TaskId::DELETE_FTP_DATA && count($params) == 2 && $params[0] != '' && $params[1] != '') {

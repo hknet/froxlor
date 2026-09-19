@@ -560,6 +560,7 @@ return [
 		'cron_mailboxsize' => 'Berechnung der Mailbox-Größen',
 		'cron_letsencrypt' => 'Aktualisierung der Let\'s Encrypt Zertifikate',
 		'cron_export' => 'Ausstehende Datenexporte erstellen',
+		'cron_logfile_acls' => 'Abgleich der ACLs für Kunden-Logdateien',
 		'cron_backup' => 'System- und Kunden-Sicherungen erstellen',
 	],
 	'cronjob' => [
@@ -883,6 +884,8 @@ return [
 		'invalidmysqlhost' => 'Ungültige MySQL-Host-Adresse: "%s"',
 		'cannotuseawstatsandwebalizeratonetime' => 'Webalizer und AWstats können nicht zur gleichen Zeit aktiviert werden, bitte wählen Sie eines aus.',
 		'cannotwritetologfile' => 'Logdatei "%s" konnte nicht für Schreiboperationen geöffnet werden.',
+		'logfiles_acl_missing_tools' => 'POSIX-ACLs für Logdateien benötigen folgende Programme: %s. Bitte installieren Sie das Debian/Ubuntu-Paket "acl", bevor Sie diese Einstellung aktivieren.',
+		'logfiles_acl_unsupported' => 'Das konfigurierte Logdatei-Verzeichnis fehlt, ist unsicher oder wird nicht unterstützt. Bitte korrigieren Sie das Logdatei-Verzeichnis, bevor Sie diese Einstellung aktivieren.',
 		'vmailquotawrong' => 'Die Kontingent-Größe muss positiv sein.',
 		'allocatetoomuchquota' => 'Sie versuchen "%s" MB Kontingent zu zuweisen, haben aber nicht genug übrig.',
 		'missingfields' => 'Es wurden nicht alle Felder augefüllt.',
@@ -1434,6 +1437,10 @@ Vielen Dank, Ihr Administrator',
 		'logfiles_directory' => [
 			'title' => 'Webserver-Logdateien-Verzeichnis',
 			'description' => 'Wo sollen die Logdateien des Webservers liegen?',
+		],
+		'logfiles_acl_enabled' => [
+			'title' => 'SSH-Zugriff auf Webserver-Logdateien der Kunden aktivieren',
+			'description' => '<strong class="text-danger">Bitte beachten: Dadurch erhält jedes Unix-Konto, das die GID eines berechtigten Kunden verwendet, lesenden Shell-Zugriff auf möglicherweise sensible aktuelle, rotierte und komprimierte Access- und Error-Logs sämtlicher Domains dieses Kunden. Verwenden Sie diese Option mit äußerster Vorsicht und aktivieren Sie sie nur, wenn Sie die Auswirkungen auf die Sicherheit verstehen. Das Paket "acl" wird benötigt.</strong>',
 		],
 		'logfiles_script' => [
 			'title' => 'Eigenes Script zu dem Log-Files übergeben werden',
@@ -2272,6 +2279,7 @@ Vielen Dank, Ihr Administrator',
 		'DELETE_DOMAIN_SSL' => 'Lösche SSL Dateien von Domain %s',
 		'UPDATE_LE_SERVICES' => 'Aktualisiere Systemdienste für Let\'s Encrypt',
 		'REBUILD_NSSUSERS' => 'Neuerstellung der libnss-extrausers Dateien',
+		'REBUILD_LOG_ACLS' => 'Abgleich der ACLs für Kunden-Logdateien',
 	],
 	'terms' => 'AGB',
 	'traffic' => [

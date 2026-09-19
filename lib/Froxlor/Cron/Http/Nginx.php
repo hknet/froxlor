@@ -38,6 +38,7 @@ use Froxlor\Http\Directory;
 use Froxlor\Http\Statistics;
 use Froxlor\Settings;
 use Froxlor\System\Cronjob;
+use Froxlor\System\LogAcl;
 use Froxlor\Validate\Validate;
 use Froxlor\System\Crypt;
 use PDO;
@@ -733,34 +734,31 @@ class Nginx extends HttpConfigBase
 	{
 		$logfiles_text = '';
 
-		$speciallogfile = '';
-		if ($domain['speciallogfile'] == '1') {
-			if ($domain['parentdomainid'] == '0') {
-				$speciallogfile = '-' . $domain['domain'];
-			} else {
-				$speciallogfile = '-' . $domain['parentdomain'];
-			}
-		}
-
 		if ($domain['writeerrorlog']) {
-			// The normal access/error - logging is enabled
-			$error_log = FileDir::makeCorrectFile(Settings::Get('system.logfiles_directory') . $domain['loginname'] . $speciallogfile . '-error.log');
+			// Keep Nginx logfile naming identical to ACL reconciliation. The shared
+			// builder preserves the existing speciallogfile root/parent-domain rules.
+			$error_log = FileDir::makeCorrectFile(Settings::Get('system.logfiles_directory') . LogAcl::getLogfileBasename($domain, 'error'));
 			// Create the logfile if it does not exist (fixes #46)
 			touch($error_log);
 			chmod($error_log, 0640);
 			chown($error_log, Settings::Get('system.httpuser'));
 			chgrp($error_log, Settings::Get('system.httpgroup'));
+			// Grant the customer read access here, where the file is created.
+			$this->applyLogfileAcl($error_log, $domain);
 		} else {
 			$error_log = '/dev/null';
 		}
 
 		if ($domain['writeaccesslog']) {
-			$access_log = FileDir::makeCorrectFile(Settings::Get('system.logfiles_directory') . $domain['loginname'] . $speciallogfile . '-access.log');
+			// Use the same security-sensitive naming path as the error logfile above.
+			$access_log = FileDir::makeCorrectFile(Settings::Get('system.logfiles_directory') . LogAcl::getLogfileBasename($domain, 'access'));
 			// Create the logfile if it does not exist (fixes #46)
 			touch($access_log);
 			chmod($access_log, 0640);
 			chown($access_log, Settings::Get('system.httpuser'));
 			chgrp($access_log, Settings::Get('system.httpgroup'));
+			// Grant the customer read access here, where the file is created.
+			$this->applyLogfileAcl($access_log, $domain);
 		} else {
 			$access_log = '/dev/null';
 		}
@@ -811,7 +809,7 @@ class Nginx extends HttpConfigBase
 				// be sure to build the awstats conf file as well
 				// and chown it using $awstats_params, #258
 				// Bug 960 + Bug 970 : Use full $domain instead of custom $awstats_params as following classes depend on the information
-				Statistics::createAWStatsConf(Settings::Get('system.logfiles_directory') . $domain['loginname'] . $speciallogfile . '-access.log', $domain['domain'], $alias . $server_alias, $domain['customerroot'], $domain);
+				Statistics::createAWStatsConf(Settings::Get('system.logfiles_directory') . LogAcl::getLogfileBasename($domain, 'access'), $domain['domain'], $alias . $server_alias, $domain['customerroot'], $domain);
 			}
 		}
 

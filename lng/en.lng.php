@@ -606,6 +606,7 @@ return [
 		'cron_mailboxsize' => 'Mailbox-size calculation',
 		'cron_letsencrypt' => 'Let\'s Encrypt certificate updates',
 		'cron_export' => 'Process data-export jobs',
+		'cron_logfile_acls' => 'Reconciling customer logfile ACLs',
 		'cron_backup' => 'Process system- and customer backup jobs',
 	],
 	'cronjob' => [
@@ -955,6 +956,8 @@ return [
 		'invalidmysqlhost' => 'Invalid MySQL host address: %s',
 		'cannotuseawstatsandwebalizeratonetime' => 'You cannot enable Webalizer and AWstats at the same time, please chose one of them',
 		'cannotwritetologfile' => 'Cannot open logfile %s for writing',
+		'logfiles_acl_missing_tools' => 'POSIX logfile ACL support requires the following tools: %s. Install the Debian/Ubuntu acl package before enabling this setting.',
+		'logfiles_acl_unsupported' => 'The configured logfile directory is missing, unsafe, or unsupported. Correct the logfile directory before enabling this setting.',
 		'vmailquotawrong' => 'The quotasize must be positive number.',
 		'allocatetoomuchquota' => 'You tried to allocate %s MB Quota, but you do not have enough left.',
 		'missingfields' => 'Not all required fields were filled out.',
@@ -1556,6 +1559,10 @@ Yours sincerely, your administrator',
 		'logfiles_directory' => [
 			'title' => 'Logfiles directory',
 			'description' => 'Where should all log files be stored?',
+		],
+		'logfiles_acl_enabled' => [
+			'title' => 'Enable SSH access to customer webserver logs',
+			'description' => '<strong class="text-danger">Please note: This grants every Unix account sharing an eligible customer\'s GID read-only shell access to potentially sensitive current, rotated, and compressed access/error logs for all of that customer\'s domains. Use with extreme caution and only enable this if you understand the security impact. The acl package is required.</strong>',
 		],
 		'logfiles_script' => [
 			'title' => 'Custom script to pipe log-files to',
@@ -2400,6 +2407,7 @@ Yours sincerely, your administrator',
 		'DELETE_DOMAIN_SSL' => 'Delete ssl files of domain %s',
 		'UPDATE_LE_SERVICES' => 'Updating system services for Let\'s Encrypt',
 		'REBUILD_NSSUSERS' => 'Rebuilding libnss-extrausers files',
+		'REBUILD_LOG_ACLS' => 'Reconciling customer logfile ACLs',
 	],
 	'terms' => 'Terms of use',
 	'traffic' => [

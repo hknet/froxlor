@@ -941,6 +941,9 @@ return [
 		'invalidmysqlhost' => 'MySQL主机地址无效：%s',
 		'cannotuseawstatsandwebalizeratonetime' => '您不能同时启用Webalizer和AWstats，请选择其中一个',
 		'cannotwritetologfile' => '无法打开日志文件%s进行写入',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_missing_tools' => '日志文件的 POSIX ACL 支持需要以下工具：%s。请在启用此设置前安装 Debian/Ubuntu 的 acl 软件包。',
+		'logfiles_acl_unsupported' => '配置的日志文件目录不存在、不安全或不受支持。请在启用此设置前更正日志文件目录。',
 		'vmailquotawrong' => '定额必须为正数。',
 		'allocatetoomuchquota' => '您尝试分配%s MB内存，但剩余内存不足。',
 		'missingfields' => '未填写所有必填字段。',
@@ -1512,6 +1515,11 @@ return [
 		'logfiles_directory' => [
 			'title' => '日志文件目录',
 			'description' => '所有日志文件都应该存储在哪里？',
+		],
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_enabled' => [
+			'title' => '启用对客户 Web 服务器日志的 SSH 访问',
+			'description' => '<strong class="text-danger">请注意：此选项将使共享符合条件客户 GID 的每个 Unix 账户，都能通过 shell 以只读方式访问该客户所有域名的当前、轮转及压缩的访问日志和错误日志，其中可能包含敏感信息。请极其谨慎地使用，只有在理解其安全影响时才启用。需要 acl 软件包。</strong>',
 		],
 		'logfiles_script' => [
 			'title' => '自定义脚本将日志文件传输到',
@@ -2351,6 +2359,8 @@ return [
 		'REBUILD_RSPAMD' => '正在重新生成反垃圾邮件配置。',
 		'CREATE_QUOTA' => '在文件系统上设置配额',
 		'REBUILD_CRON' => '重新生成cron.d文件',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'REBUILD_LOG_ACLS' => '正在核对客户日志文件的 ACL',
 		'CREATE_CUSTOMER_DATADUMP' => '客户 %s 的数据导出任务',
 		'DELETE_DOMAIN_PDNS' => '从PowerDNS数据库中删除域名 %s',
 		'DELETE_DOMAIN_SSL' => '删除域名 %s 的SSL文件',

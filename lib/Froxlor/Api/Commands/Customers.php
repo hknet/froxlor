@@ -1585,6 +1585,13 @@ class Customers extends ApiCommand implements ResourceEntity
 		$upd_stmt = Database::prepare($upd_query);
 		Database::pexecute($upd_stmt, $upd_data);
 
+		// Both flags change whether this customer is eligible for logfile ACLs.
+		// Queue root reconciliation instead of changing filesystem ACLs in the API.
+		if ($this->isAdmin() && ($logviewenabled != $result['logviewenabled'] || $deactivated != $result['deactivated'])) {
+			// Scope to this customer: nobody else's ACLs changed.
+			Cronjob::inserttask(TaskId::REBUILD_LOG_ACLS, (int)$result['customerid']);
+		}
+
 		if ($password != $result['password']) {
 			// password has been changed - purge 2fa "remember this device" tokens so a
 			// credential rotation actually locks out anyone holding a surviving cookie.
@@ -1965,6 +1972,10 @@ class Customers extends ApiCommand implements ResourceEntity
 				// insert task to remove the customers files from the filesystem
 				Cronjob::inserttask(TaskId::DELETE_CUSTOMER_FILES, $result['loginname']);
 			}
+
+			// Persisted ACL state survives customer deletion, so root reconciliation
+			// can still identify and revoke the removed customer's numeric GID.
+			Cronjob::inserttask(TaskId::REBUILD_LOG_ACLS, (int)$result['customerid']);
 
 			// Using filesystem - quota, insert a task which cleans the filesystem - quota
 			Cronjob::inserttask(TaskId::CREATE_QUOTA);

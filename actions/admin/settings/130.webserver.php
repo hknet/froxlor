@@ -165,7 +165,9 @@ return [
 					'type' => 'text',
 					'string_type' => 'dir',
 					'default' => '/var/customers/logs/',
-					'save_method' => 'storeSettingField',
+					// Changing the log root must queue ACL reconciliation, otherwise
+					// managed entries stay behind on the previous directory.
+					'save_method' => 'storeSettingFieldInsertLogAclTask',
 					'requires_reconf' => ['http']
 				],
 				'system_logfiles_script' => [

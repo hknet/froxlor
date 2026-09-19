@@ -26,6 +26,7 @@
 namespace Froxlor\Validate;
 
 use Froxlor\Database\Database;
+use Froxlor\System\LogAcl;
 use Froxlor\FileDir;
 use Froxlor\Settings;
 use Froxlor\UI\Request;
@@ -308,6 +309,48 @@ class Check
 	 * @param $allnewfieldvalues
 	 * @return array|int[]
 	 */
+	/**
+	 * Validate the unprivileged part of enabling logfile ACLs. The web request
+	 * checks required tools and root-path sanity; the root reconciler performs
+	 * the actual target-filesystem ACL capability probe.
+	 */
+	public static function checkLogfilesAcl($fieldname, $fielddata, $newfieldvalue, $allnewfieldvalues)
+	{
+		// Disabling must remain possible even if tools or the log root are broken,
+		// because the queued root task is also responsible for cleanup retries.
+		if ((int)$newfieldvalue !== 1) {
+			return [self::FORMFIELDS_PLAUSIBILITY_CHECK_OK];
+		}
+
+		$acl = new LogAcl();
+		$missing_tools = $acl->getMissingTools();
+		if (!empty($missing_tools)) {
+			return [
+				self::FORMFIELDS_PLAUSIBILITY_CHECK_ERROR,
+				'logfiles_acl_missing_tools',
+				implode(', ', $missing_tools)
+			];
+		}
+
+		$configured_root = '';
+		$real_root = false;
+		try {
+			$configured_root = rtrim(FileDir::makeCorrectDir((string)Settings::Get('system.logfiles_directory')), '/');
+			$real_root = realpath($configured_root);
+		} catch (\Exception $e) {
+			$real_root = false;
+		}
+		if ($configured_root === '' || $configured_root === '/' || is_link($configured_root)
+			|| $real_root === false || !is_dir($real_root) || $real_root === '/') {
+			return [
+				self::FORMFIELDS_PLAUSIBILITY_CHECK_ERROR,
+				'logfiles_acl_unsupported'
+			];
+		}
+
+		return [self::FORMFIELDS_PLAUSIBILITY_CHECK_OK];
+	}
+
 	public static function checkLocalGroup($fieldname, $fielddata, $newfieldvalue, $allnewfieldvalues)
 	{
 		if (empty($newfieldvalue) || $fielddata['value'] == $newfieldvalue) {

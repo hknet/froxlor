@@ -25,7 +25,9 @@
 
 use Froxlor\Database\Database;
 use Froxlor\Froxlor;
+use Froxlor\Cron\TaskId;
 use Froxlor\Install\Update;
+use Froxlor\System\Cronjob;
 use Froxlor\Settings;
 
 if (!defined('_CRON_UPDATE')) {
@@ -265,4 +267,42 @@ if (Froxlor::isFroxlorVersion('2.3.12')) {
 if (Froxlor::isFroxlorVersion('2.3.13')) {
 	Update::showUpdateStep("Updating from 2.3.13 to 2.3.14", false);
 	Froxlor::updateToVersion('2.3.14');
+}
+
+if (Froxlor::isDatabaseVersion('202608210')) {
+	Update::showUpdateStep("Adding customer log ACL settings and state table");
+	// State is required for fail-safe revocation after customer deletion, GID
+	// reuse, global disablement, or a configured logfile-root change.
+	Settings::AddNew('system.logfiles_acl_enabled', '0');
+	Database::query("CREATE TABLE IF NOT EXISTS `" . TABLE_PANEL_LOG_ACL_STATE . "` (
+		`customerid` int(11) unsigned NOT NULL,
+		`gid` int(11) unsigned NOT NULL,
+		`logroot` varbinary(255) NOT NULL,
+		PRIMARY KEY (`gid`, `logroot`),
+		KEY `customerid` (`customerid`)
+	) ENGINE=InnoDB CHARSET=utf8 COLLATE=utf8_general_ci;");
+	Update::lastStepStatus(0);
+
+	Update::showUpdateStep("Adding customer logfile ACL cronjob");
+	// Reconciliation gets its own schedule instead of running with every tasks
+	// cron. Grants and revocations still happen immediately through task 15,
+	// the webserver cron and the logrotate hook.
+	$acl_cron_stmt = Database::prepare("
+		INSERT INTO `" . TABLE_PANEL_CRONRUNS . "` (`module`, `cronfile`, `cronclass`, `interval`, `isactive`, `desc_lng_key`)
+		SELECT :module, :cronfile, :cronclass, :cronint, '1', :desckey FROM DUAL
+		WHERE NOT EXISTS (SELECT 1 FROM `" . TABLE_PANEL_CRONRUNS . "` `c` WHERE `c`.`cronfile` = :cronfilecheck)
+	");
+	Database::pexecute($acl_cron_stmt, [
+		'module' => 'froxlor/core',
+		'cronfile' => 'logfile_acls',
+		'cronclass' => '\\Froxlor\\Cron\\System\\LogAclsCron',
+		'cronint' => '1 DAY',
+		'desckey' => 'cron_logfile_acls',
+		'cronfilecheck' => 'logfile_acls'
+	]);
+	// Without regenerating cron.d the new entry would never actually fire.
+	Cronjob::inserttask(TaskId::REBUILD_CRON);
+	Update::lastStepStatus(0);
+
+	Froxlor::updateToDbVersion('202609200');
 }

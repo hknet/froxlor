@@ -30,6 +30,8 @@ class TaskIDTest extends TestCase
 
 		'DELETE_DOMAIN_SSL' => 12,
 
+		'REBUILD_LOG_ACLS' => 15,
+
 		'CREATE_CUSTOMER_DATADUMP' => 20,
 
 		'REBUILD_CRON' => 99,

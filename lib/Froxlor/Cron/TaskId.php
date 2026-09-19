@@ -98,6 +98,11 @@ final class TaskId
 	const REBUILD_NSSUSERS = 14;
 
 	/**
+	 * TYPE=15 reconcile customer logfile ACLs
+	 */
+	const REBUILD_LOG_ACLS = 15;
+
+	/**
 	 * TYPE=20 CUSTUMER DATA DUMP
 	 */
 	const CREATE_CUSTOMER_DATADUMP = 20;

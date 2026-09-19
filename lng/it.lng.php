@@ -824,6 +824,9 @@ return [
 		'invalidmysqlhost' => 'Indirizzo MySQL non valido: %s',
 		'cannotuseawstatsandwebalizeratonetime' => 'Non è possibile abilitare Webalizer e Awstats allo stesso tempo, si prega di sceglierne uno solo',
 		'cannotwritetologfile' => 'Impossibile aprire il file di log %s in scrittura',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_missing_tools' => 'Il supporto ACL POSIX per i file di log richiede i seguenti strumenti: %s. Installare il pacchetto acl di Debian/Ubuntu prima di abilitare questa impostazione.',
+		'logfiles_acl_unsupported' => 'La directory dei file di log configurata è mancante, non sicura o non supportata. Correggere la directory dei file di log prima di abilitare questa impostazione.',
 		'vmailquotawrong' => 'Il limite deve essere un numero positivo.',
 		'allocatetoomuchquota' => 'Si è tentato di allocare %s MB Limite, ma non c\'è abbastanza spazio disponibile.',
 		'missingfields' => 'Non tutti i campi obbligatori sono stati compilati.',
@@ -1193,6 +1196,11 @@ Cordiali Saluti, Team froxlor',
 		'logfiles_directory' => [
 			'title' => 'Cartella logfiles',
 			'description' => 'Dove devono essere immagazzinati tutti i log?',
+		],
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_enabled' => [
+			'title' => 'Abilita l\'accesso SSH ai log del server web dei clienti',
+			'description' => '<strong class="text-danger">Attenzione: questo concede a ogni account Unix che condivide il GID di un cliente idoneo l\'accesso in sola lettura dalla shell ai log di accesso e di errore correnti, ruotati e compressi, potenzialmente sensibili, di tutti i domini di quel cliente. Usare con estrema cautela e abilitare solo se se ne comprende l\'impatto sulla sicurezza. È richiesto il pacchetto acl.</strong>',
 		],
 		'ipaddress' => [
 			'title' => 'Indirizzo IP',
@@ -1716,6 +1724,8 @@ Nota: Perfavore <b>sii sicuro</b> di usare lo stesso nome di file come per il cr
 		'DELETE_EMAIL_DATA' => 'Elimina i dati di posta elettronica del cliente.',
 		'DELETE_FTP_DATA' => 'Elimina i dati account-ftp del cliente.',
 		'REBUILD_CRON' => 'Ricostruisci il file cron.d',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'REBUILD_LOG_ACLS' => 'Riconciliazione delle ACL dei file di log dei clienti',
 	],
 	'traffic' => [
 		'month' => 'Mese',

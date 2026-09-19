@@ -221,6 +221,20 @@ class Store
 		return $returnvalue;
 	}
 
+	/**
+	 * Persist the global ACL policy and defer privileged filesystem changes to
+	 * the root task runner. The same task handles both grants and revocations.
+	 */
+	public static function storeSettingFieldInsertLogAclTask($fieldname, $fielddata, $newfieldvalue)
+	{
+		$returnvalue = self::storeSettingField($fieldname, $fielddata, $newfieldvalue);
+
+		if ($returnvalue !== false) {
+			Cronjob::inserttask(TaskId::REBUILD_LOG_ACLS);
+		}
+		return $returnvalue;
+	}
+
 	public static function storeSettingFieldInsertBindTask($fieldname, $fielddata, $newfieldvalue)
 	{
 		// first save the setting itself

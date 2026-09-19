@@ -467,6 +467,9 @@ return [
 		'invalidmysqlhost' => 'Ongeldig adres voor MySQL-host: %s',
 		'cannotuseawstatsandwebalizeratonetime' => 'U kunt Webalizer en AWstats niet tegelijkertijd gebruiken. Kies een van de twee.',
 		'cannotwritetologfile' => 'Kan logbestand %s niet openen om naartoe te schrijven',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_missing_tools' => 'POSIX-ACL-ondersteuning voor logbestanden vereist de volgende hulpprogramma\'s: %s. Installeer het Debian/Ubuntu-pakket acl voordat u deze instelling inschakelt.',
+		'logfiles_acl_unsupported' => 'De ingestelde logbestandenmap ontbreekt, is onveilig of wordt niet ondersteund. Corrigeer de logbestandenmap voordat u deze instelling inschakelt.',
 		'vmailquotawrong' => 'Het quotum dient een positief getal te zijn.',
 		'allocatetoomuchquota' => 'U probeerde %s MB Quotum toe te kennen, maar u heeft niet voldoende over.',
 		'missingfields' => 'Niet alle vereiste velden zijn ingevuld.',
@@ -728,6 +731,11 @@ Met vriendelijke groet, uw beheerder',
 		'logfiles_directory' => [
 			'title' => 'Logfiles map',
 			'description' => 'Waar zullen alle log-file opgeslagen worden?',
+		],
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_enabled' => [
+			'title' => 'SSH-toegang tot webserverlogboeken van klanten inschakelen',
+			'description' => '<strong class="text-danger">Let op: hiermee krijgt elk Unix-account dat de GID van een in aanmerking komende klant deelt alleen-lezen shell-toegang tot mogelijk gevoelige huidige, geroteerde en gecomprimeerde toegangs- en foutlogboeken van alle domeinen van die klant. Gebruik dit met uiterste voorzichtigheid en schakel het alleen in als u de gevolgen voor de beveiliging begrijpt. Het pakket acl is vereist.</strong>',
 		],
 		'ipaddress' => [
 			'title' => 'IP-Adres',
@@ -1071,6 +1079,8 @@ Met vriendelijke groet, uw beheerder',
 	'tasks' => [
 		'outstanding_tasks' => 'Uitstaande cron-taken',
 		'REBUILD_VHOST' => 'Bezig met opnieuw opbouwen van de configuratie van de webserver',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'REBUILD_LOG_ACLS' => 'ACL\'s van klantlogbestanden afstemmen',
 		'CREATE_HOME' => 'Klant met naam %s wordt toegevoegd',
 		'REBUILD_DNS' => 'Opnieuw opbouwen bind-configuratie',
 		'CREATE_FTP' => 'Map aanmaken voor nieuwe FTP-gebruiker',

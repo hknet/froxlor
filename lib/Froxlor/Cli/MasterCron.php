@@ -51,7 +51,7 @@ final class MasterCron extends CliCommand
 		$this->setName('froxlor:cron');
 		$this->setDescription('Regulary perform tasks created by froxlor');
 		$this->addArgument('job', InputArgument::IS_ARRAY, 'Job(s) to run');
-		$this->addOption('run-task', 'r', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Run a specific task [1 = re-generate configs, 4 = re-generate dns zones, 9 = re-generate rspamd configs, 10 = re-set quotas, 99 = re-create cron.d-file]')
+		$this->addOption('run-task', 'r', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Run a specific task [1 = re-generate configs, 4 = re-generate dns zones, 9 = re-generate rspamd configs, 10 = re-set quotas, 15 = reconcile logfile ACLs, 99 = re-create cron.d-file]')
 			->addOption('force', 'f', InputOption::VALUE_NONE, 'Forces given job or, if none given, forces re-generating of config-files (webserver, nameserver, etc.)')
 			->addOption('debug', 'd', InputOption::VALUE_NONE, 'Output debug information about what is going on to STDOUT.')
 			->addOption('no-fork', 'N', InputOption::VALUE_NONE, 'Do not fork to background (traffic cron only).');
@@ -81,6 +81,7 @@ final class MasterCron extends CliCommand
 				Cronjob::inserttask(TaskId::REBUILD_CRON);
 				Cronjob::inserttask(TaskId::UPDATE_LE_SERVICES);
 				Cronjob::inserttask(TaskId::REBUILD_NSSUSERS);
+				Cronjob::inserttask(TaskId::REBUILD_LOG_ACLS);
 				$jobs[] = 'tasks';
 			}
 			define('CRON_IS_FORCED', 1);
@@ -97,7 +98,7 @@ final class MasterCron extends CliCommand
 		if ($input->getOption('run-task')) {
 			$tasks_to_run = $input->getOption('run-task');
 			foreach ($tasks_to_run as $ttr) {
-				if (in_array($ttr, [TaskId::REBUILD_VHOST, TaskId::REBUILD_DNS, TaskId::REBUILD_RSPAMD, TaskId::CREATE_QUOTA, TaskId::REBUILD_CRON, TaskId::UPDATE_LE_SERVICES, TaskId::REBUILD_NSSUSERS])) {
+				if (in_array($ttr, [TaskId::REBUILD_VHOST, TaskId::REBUILD_DNS, TaskId::REBUILD_RSPAMD, TaskId::CREATE_QUOTA, TaskId::REBUILD_CRON, TaskId::UPDATE_LE_SERVICES, TaskId::REBUILD_NSSUSERS, TaskId::REBUILD_LOG_ACLS])) {
 					Cronjob::inserttask($ttr);
 					$jobs[] = 'tasks';
 				} else {
@@ -127,7 +128,6 @@ final class MasterCron extends CliCommand
 		$tasks_cnt_stmt = Database::query("SELECT COUNT(*) as jobcnt FROM `panel_tasks`");
 		$tasks_cnt = $tasks_cnt_stmt->fetch(PDO::FETCH_ASSOC);
 
-		// iterate through all needed jobs
 		foreach ($jobs as $job) {
 			// lock the job
 			if ($this->lockJob($job, $output)) {

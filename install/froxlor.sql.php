@@ -382,6 +382,17 @@ CREATE TABLE `panel_settings` (
   PRIMARY KEY  (`settingid`)
 ) ENGINE=InnoDB CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- Persist Froxlor-managed grants so revocation remains possible after a
+-- customer is deleted, its numeric GID is reused, or the log root changes.
+DROP TABLE IF EXISTS `panel_log_acl_state`;
+CREATE TABLE `panel_log_acl_state` (
+  `customerid` int(11) unsigned NOT NULL,
+  `gid` int(11) unsigned NOT NULL,
+  `logroot` varbinary(255) NOT NULL,
+  PRIMARY KEY (`gid`, `logroot`),
+  KEY `customerid` (`customerid`)
+) ENGINE=InnoDB CHARSET=utf8 COLLATE=utf8_general_ci;
+
 INSERT INTO `panel_settings` (`settinggroup`, `varname`, `value`) VALUES
 	('catchall', 'catchall_enabled', '1'),
 	('session', 'allow_multiple_login', '0'),
@@ -536,6 +547,7 @@ opcache.validate_timestamps'),
 	('system', 'lastguid', '9999'),
 	('system', 'documentroot_prefix', '/var/customers/webs/'),
 	('system', 'logfiles_directory', '/var/customers/logs/'),
+	('system', 'logfiles_acl_enabled', '0'),
 	('system', 'ipaddress', 'SERVERIP'),
 	('system', 'apachereload_command', 'service apache2 reload'),
 	('system', 'last_traffic_run', '000000'),
@@ -749,7 +761,7 @@ opcache.validate_timestamps'),
 	('panel', 'settings_mode', '0'),
 	('panel', 'menu_collapsed', '1'),
 	('panel', 'version', '2.3.14'),
-	('panel', 'db_version', '202608210');
+	('panel', 'db_version', '202609200');
 
 
 DROP TABLE IF EXISTS `panel_tasks`;
@@ -919,7 +931,8 @@ INSERT INTO `cronjobs_run` (`id`, `module`, `cronfile`, `cronclass`, `interval`,
 	(3, 'froxlor/reports', 'usage_report', '\\Froxlor\\Cron\\Traffic\\ReportsCron', '1 DAY', '1', 'cron_usage_report'),
 	(4, 'froxlor/core', 'mailboxsize', '\\Froxlor\\Cron\\System\\MailboxsizeCron', '6 HOUR', '1', 'cron_mailboxsize'),
 	(5, 'froxlor/letsencrypt', 'letsencrypt', '\\Froxlor\\Cron\\Http\\LetsEncrypt\\AcmeSh', '5 MINUTE', '0', 'cron_letsencrypt'),
-	(6, 'froxlor/export', 'export', '\\Froxlor\\Cron\\System\\ExportCron', '1 HOUR', '0', 'cron_export');
+	(6, 'froxlor/export', 'export', '\\Froxlor\\Cron\\System\\ExportCron', '1 HOUR', '0', 'cron_export'),
+	(7, 'froxlor/core', 'logfile_acls', '\\Froxlor\\Cron\\System\\LogAclsCron', '1 DAY', '1', 'cron_logfile_acls');
 
 
 DROP TABLE IF EXISTS `ftp_quotalimits`;

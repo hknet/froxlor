@@ -35,6 +35,7 @@ use Froxlor\FroxlorLogger;
 use Froxlor\PhpHelper;
 use Froxlor\Settings;
 use Froxlor\System\Cronjob;
+use Froxlor\System\LogAcl;
 use PDO;
 
 /**
@@ -44,6 +45,52 @@ use PDO;
  */
 class HttpConfigBase
 {
+
+	/**
+	 * GIDs that already received the log-directory entry during this run.
+	 *
+	 * @var array<int,bool>
+	 */
+	private $logAclDirectoryDone = [];
+
+	/**
+	 * Grant a customer read access to a logfile right where the file is created.
+	 *
+	 * Doing this at creation time keeps the periodic reconciliation a rarely used
+	 * backstop instead of the mechanism that has to find every file by name.
+	 *
+	 * @param string $logfile
+	 * @param array $domain
+	 * @return void
+	 */
+	protected function applyLogfileAcl(string $logfile, array $domain)
+	{
+		if ((string)Settings::Get('system.logfiles_acl_enabled') !== '1') {
+			return;
+		}
+		if ((int)($domain['logviewenabled'] ?? 0) !== 1 || (int)($domain['customer_deactivated'] ?? 0) === 1) {
+			return;
+		}
+		$gid = (int)($domain['guid'] ?? 0);
+		if ($gid < 1) {
+			return;
+		}
+
+		$acl = new LogAcl();
+		if (!$acl->isAvailable()) {
+			FroxlorLogger::getInstanceOf()->logAction(FroxlorLogger::CRON_ACTION, LOG_WARNING, 'Customer logfile ACLs are enabled but ' . implode(', ', $acl->getMissingTools()) . ' is unavailable');
+			return;
+		}
+		if (!isset($this->logAclDirectoryDone[$gid])) {
+			$this->logAclDirectoryDone[$gid] = true;
+			if (!$acl->grantDirectoryAccess(dirname($logfile), $gid)) {
+				FroxlorLogger::getInstanceOf()->logAction(FroxlorLogger::CRON_ACTION, LOG_WARNING, 'Unable to grant logfile directory access: ' . $acl->getLastError());
+			}
+		}
+		if (!$acl->grantLogfileRead($logfile, $gid)) {
+			FroxlorLogger::getInstanceOf()->logAction(FroxlorLogger::CRON_ACTION, LOG_WARNING, 'Unable to grant logfile read access: ' . $acl->getLastError());
+		}
+	}
 
 	/**
 	 * Pre-defined DHE groups to use as fallback if dhparams_file

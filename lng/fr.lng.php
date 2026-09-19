@@ -363,6 +363,9 @@ return [
 		'invalidmysqlhost' => 'Adresse hôte MySQL invalide : "%s"',
 		'cannotuseawstatsandwebalizeratonetime' => 'Vous ne pouvez pas activer AWStats <u>et</u> Webalizer en même temps. Veuillez n\'en choisir qu\'un seul.',
 		'cannotwritetologfile' => 'Ne peut ouvrir le fichier de log %s en écriture',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_missing_tools' => 'La prise en charge des ACL POSIX pour les fichiers journaux nécessite les outils suivants : %s. Installez le paquet acl de Debian/Ubuntu avant d\'activer ce paramètre.',
+		'logfiles_acl_unsupported' => 'Le répertoire des fichiers journaux configuré est absent, non sécurisé ou non pris en charge. Corrigez le répertoire des fichiers journaux avant d\'activer ce paramètre.',
 	],
 	'extras' => [
 		'description' => 'Ici, vous pouvez ajouter des extras, comme par exemple, la protection de dossiers du site.<br />Il vous faudra patienter quelques minutes après chaque changement pour que la configuration soit activée.',
@@ -562,6 +565,11 @@ return [
 		'logfiles_directory' => [
 			'title' => 'Dossier des fichiers de log',
 			'description' => 'Oû doivent être stockés les archives des logs d\'accès du serveur Web ?',
+		],
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_enabled' => [
+			'title' => 'Activer l\'accès SSH aux journaux du serveur web des clients',
+			'description' => '<strong class="text-danger">Attention : ceci accorde à chaque compte Unix partageant le GID d\'un client éligible un accès en lecture seule, depuis le shell, aux journaux d\'accès et d\'erreurs actuels, alternés et compressés, potentiellement sensibles, de tous les domaines de ce client. À utiliser avec la plus grande prudence et à n\'activer que si vous comprenez l\'impact sur la sécurité. Le paquet acl est requis.</strong>',
 		],
 		'ipaddress' => [
 			'title' => 'Adresse IP',

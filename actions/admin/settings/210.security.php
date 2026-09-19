@@ -118,6 +118,21 @@ return [
 					'advanced_mode' => true,
 					'required_otp' => true
 				],
+				// This changes customer shell-visible data exposure, so keep it in the
+				// security section and require both impact confirmation and OTP.
+				'system_logfiles_acl_enabled' => [
+					'label' => lng('serversettings.logfiles_acl_enabled'),
+					'settinggroup' => 'system',
+					'varname' => 'logfiles_acl_enabled',
+					'type' => 'checkbox',
+					'default' => false,
+					'save_method' => 'storeSettingFieldInsertLogAclTask',
+					'plausibility_check_method' => [
+						'\\Froxlor\\Validate\\Check',
+						'checkLogfilesAcl'
+					],
+					'required_otp' => true
+				],
 			]
 		]
 	]

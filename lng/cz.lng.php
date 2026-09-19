@@ -946,6 +946,9 @@ return [
 		'invalidmysqlhost' => 'Neplatná adresa MySQL hostitele: %s',
 		'cannotuseawstatsandwebalizeratonetime' => 'Nemůžete povolit Webalizer a AWstats zároveň, zvolte si jeden z nich',
 		'cannotwritetologfile' => 'Nelze otevřít soubor protokolu %s pro zápis',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_missing_tools' => 'Podpora POSIX ACL pro soubory protokolů vyžaduje následující nástroje: %s. Před povolením tohoto nastavení nainstalujte balíček acl pro Debian/Ubuntu.',
+		'logfiles_acl_unsupported' => 'Nastavený adresář souborů protokolů chybí, není bezpečný nebo není podporován. Před povolením tohoto nastavení opravte adresář souborů protokolů.',
 		'vmailquotawrong' => 'Kvóta musí být kladné číslo.',
 		'allocatetoomuchquota' => 'Pokusili jste se přidělit %s MB kvótu, ale již vám nezbývá dostatek.',
 		'missingfields' => 'Ne všechna povinná pole byla vyplněna.',
@@ -1534,6 +1537,11 @@ Ach upřímně, váš správce',
 		'logfiles_directory' => [
 			'title' => 'Adresář souborů protokolu',
 			'description' => 'Kde mají být uloženy všechny soubory protokolů?',
+		],
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_enabled' => [
+			'title' => 'Povolit přístup SSH k protokolům webového serveru zákazníků',
+			'description' => '<strong class="text-danger">Upozornění: Tímto získá každý unixový účet sdílející GID oprávněného zákazníka přístup pro čtení z shellu k potenciálně citlivým aktuálním, rotovaným i komprimovaným protokolům přístupů a chyb všech domén tohoto zákazníka. Používejte s maximální opatrností a povolte pouze tehdy, pokud rozumíte bezpečnostním dopadům. Je vyžadován balíček acl.</strong>',
 		],
 		'logfiles_script' => [
 			'title' => 'Vlastní skript pro odesílání souborů protokolu do',
@@ -2373,6 +2381,8 @@ Ach upřímně, váš správce',
 		'REBUILD_RSPAMD' => 'Obnovení konfigurace antispamu.',
 		'CREATE_QUOTA' => 'Nastavit kvótu na souborovém systému',
 		'REBUILD_CRON' => 'Obnovení cron.d-souboru',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'REBUILD_LOG_ACLS' => 'Sesouhlasení ACL protokolových souborů zákazníků',
 		'CREATE_CUSTOMER_DATADUMP' => 'Úloha pro export dat pro zákazníka %s',
 		'DELETE_DOMAIN_PDNS' => 'Odstranit doménu %s z databáze PowerDNS',
 		'DELETE_DOMAIN_SSL' => 'Odstranit ssl soubory domény %s',

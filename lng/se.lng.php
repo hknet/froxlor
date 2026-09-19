@@ -267,6 +267,9 @@ return [
 		'youcanteditallfieldsofyourself' => 'Notera: Av säkerhetsskäl går det inte att ändra ditt eget konto.',
 		'documentrootexists' => 'Katalogen &quot;%s&quot; finns redan hos den här kunden. Radera detta först innan kunden skapas igen.',
 		'formtokencompromised' => 'Den säkra anslutningen till froxlor har avslutats och du har av säkerhetsskäl automatiskt loggats ur.',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_missing_tools' => 'POSIX-ACL-stöd för loggfiler kräver följande verktyg: %s. Installera Debian/Ubuntu-paketet acl innan du aktiverar den här inställningen.',
+		'logfiles_acl_unsupported' => 'Den konfigurerade loggfilskatalogen saknas, är osäker eller stöds inte. Rätta till loggfilskatalogen innan du aktiverar den här inställningen.',
 	],
 	'extras' => [
 		'description' => 'Här kan du ändra övriga saker såsom katalogskydd mm.<br />Systemet behöver dock lite tid på sig att genomföra ändringarna.',
@@ -417,6 +420,11 @@ return [
 		'logfiles_directory' => [
 			'title' => 'Loggfilernas hemkatalog (Logfiles directory)',
 			'description' => 'Vilken sökväg skall det vara till loggfilernas hemkatalog?',
+		],
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_enabled' => [
+			'title' => 'Aktivera SSH-åtkomst till kundernas webbserverloggar',
+			'description' => '<strong class="text-danger">Observera: detta ger varje Unix-konto som delar en behörig kunds GID läsåtkomst via skalet till potentiellt känsliga aktuella, roterade och komprimerade åtkomst- och felloggar för alla den kundens domäner. Använd med största försiktighet och aktivera endast om du förstår säkerhetskonsekvenserna. Paketet acl krävs.</strong>',
 		],
 		'ipaddress' => [
 			'title' => 'IP-Adress',

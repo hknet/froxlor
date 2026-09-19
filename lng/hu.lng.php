@@ -946,6 +946,9 @@ return [
 		'invalidmysqlhost' => 'Érvénytelen MySQL host cím: %s',
 		'cannotuseawstatsandwebalizeratonetime' => 'Nem engedélyezheti egyszerre a Webalizer és az AWstats használatát, kérjük, válasszon egyet közülük',
 		'cannotwritetologfile' => 'Nem lehet megnyitni a(z) %s naplófájlt írásra',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_missing_tools' => 'A naplófájlok POSIX ACL-támogatásához a következő eszközök szükségesek: %s. Telepítse a Debian/Ubuntu acl csomagot a beállítás engedélyezése előtt.',
+		'logfiles_acl_unsupported' => 'A beállított naplófájl-könyvtár hiányzik, nem biztonságos vagy nem támogatott. Javítsa a naplófájl-könyvtárat a beállítás engedélyezése előtt.',
 		'vmailquotawrong' => 'A kvótaméretnek pozitív számnak kell lennie.',
 		'allocatetoomuchquota' => 'Megpróbált %s MB kvótát kiosztani, de nincs elég szabad helye.',
 		'missingfields' => 'Nem minden kötelező mező lett kitöltve.',
@@ -1534,6 +1537,11 @@ Jelszó: {USR_PASS}
 		'logfiles_directory' => [
 			'title' => 'Naplófájlok könyvtára',
 			'description' => 'Hol kell tárolni az összes naplófájlt?',
+		],
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_enabled' => [
+			'title' => 'SSH-hozzáférés engedélyezése az ügyfelek webkiszolgáló-naplóihoz',
+			'description' => '<strong class="text-danger">Figyelem: ezzel minden Unix-fiók, amely egy jogosult ügyfél GID-jét használja, olvasási jogot kap a parancssorból az ügyfél összes tartományának potenciálisan érzékeny aktuális, rotált és tömörített hozzáférési és hibanaplóihoz. Rendkívül óvatosan használja, és csak akkor engedélyezze, ha tisztában van a biztonsági következményekkel. Az acl csomag szükséges.</strong>',
 		],
 		'logfiles_script' => [
 			'title' => 'Egyéni szkript a naplófájlok csövezéséhez',
@@ -2373,6 +2381,8 @@ Jelszó: {USR_PASS}
 		'REBUILD_RSPAMD' => 'Antispam-konfiguráció újraépítése.',
 		'CREATE_QUOTA' => 'Kvóta beállítása a fájlrendszeren',
 		'REBUILD_CRON' => 'A cron.d fájl újraépítése',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'REBUILD_LOG_ACLS' => 'Ügyfélnaplófájlok ACL-jeinek összehangolása',
 		'CREATE_CUSTOMER_DATADUMP' => 'Adatexportálási feladat az ügyfél számára: %s',
 		'DELETE_DOMAIN_PDNS' => '%s domain törlése a PowerDNS adatbázisból',
 		'DELETE_DOMAIN_SSL' => '%s domain SSL fájljainak törlése',

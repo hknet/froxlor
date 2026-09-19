@@ -847,6 +847,9 @@ return [
 		'invalidmysqlhost' => 'Adreça de host MySQL no vàlida: %s',
 		'cannotuseawstatsandwebalizeratonetime' => 'No pot activar Webalizer i AWstats al mateix temps, si us plau escolliu un d\'ells.',
 		'cannotwritetologfile' => 'No es pot obrir el fitxer de registre %s per escriure',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_missing_tools' => 'La compatibilitat amb ACL POSIX per als fitxers de registre requereix les eines següents: %s. Instal·leu el paquet acl de Debian/Ubuntu abans d\'activar aquesta opció.',
+		'logfiles_acl_unsupported' => 'El directori de fitxers de registre configurat no existeix, no és segur o no és compatible. Corregiu el directori de fitxers de registre abans d\'activar aquesta opció.',
 		'vmailquotawrong' => 'La mida de la quota ha de ser un número positiu.',
 		'allocatetoomuchquota' => 'Ha intentat assignar %s MB de quota, però no en té suficients.',
 		'missingfields' => 'No s\'han omplert tots els camps obligatoris.',
@@ -1394,6 +1397,11 @@ Atentament, el vostre administrador'
 		'logfiles_directory' => [
 			'title' => 'Directori Logfiles',
 			'description' => 'On s\'han d\'emmagatzemar tots els fitxers de registre?'
+		],
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_enabled' => [
+			'title' => 'Activa l\'accés SSH als registres del servidor web dels clients',
+			'description' => '<strong class="text-danger">Tingueu en compte: això atorga a cada compte Unix que comparteix el GID d\'un client elegible accés de només lectura des de l\'intèrpret d\'ordres als registres d\'accés i d\'error actuals, rotats i comprimits, potencialment sensibles, de tots els dominis d\'aquest client. Feu-ho servir amb molta precaució i activeu-ho només si enteneu l\'impacte de seguretat. Cal el paquet acl.</strong>',
 		],
 		'logfiles_script' => [
 			'title' => 'Script personalitzat per enviar els fitxers de registre',
@@ -2191,6 +2199,8 @@ Atentament, el vostre administrador'
 		'DELETE_EMAIL_DATA' => 'Esborrar dades de correu electrònic del client.',
 		'DELETE_FTP_DATA' => 'Esborrar les dades del compte ftp del client.',
 		'REBUILD_CRON' => 'Reconstruir el fitxer cron.d',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'REBUILD_LOG_ACLS' => 'Conciliant les ACL dels fitxers de registre dels clients',
 		'CREATE_CUSTOMER_BACKUP' => 'Treball de còpia de seguretat per al client %s',
 		'DELETE_DOMAIN_PDNS' => 'Esborrar domini %s de la base de dades PowerDNS',
 		'DELETE_DOMAIN_SSL' => 'Esborrar fitxers ssl de domini %s'

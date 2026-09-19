@@ -842,6 +842,9 @@ return [
 		'invalidmysqlhost' => 'Dirección de host MySQL no válida: %s',
 		'cannotuseawstatsandwebalizeratonetime' => 'No puede activar Webalizer y AWstats al mismo tiempo, por favor elija uno de ellos.',
 		'cannotwritetologfile' => 'No se puede abrir el archivo de registro %s para escribir',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_missing_tools' => 'La compatibilidad con ACL POSIX para los archivos de registro requiere las siguientes herramientas: %s. Instale el paquete acl de Debian/Ubuntu antes de activar esta opción.',
+		'logfiles_acl_unsupported' => 'El directorio de archivos de registro configurado no existe, no es seguro o no es compatible. Corrija el directorio de archivos de registro antes de activar esta opción.',
 		'vmailquotawrong' => 'El quotasize debe ser un número positivo.',
 		'allocatetoomuchquota' => 'Ha intentado asignar la cuota %s MB, pero no tiene suficiente.',
 		'missingfields' => 'No se han rellenado todos los campos obligatorios.',
@@ -1381,6 +1384,11 @@ Atentamente, su administrador'
 		'logfiles_directory' => [
 			'title' => 'Directorio Logfiles',
 			'description' => '¿Dónde deben almacenarse todos los archivos de registro?'
+		],
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_enabled' => [
+			'title' => 'Activar el acceso SSH a los registros del servidor web de los clientes',
+			'description' => '<strong class="text-danger">Tenga en cuenta: esto concede a cada cuenta Unix que comparte el GID de un cliente habilitado acceso de solo lectura desde el intérprete de comandos a los registros de acceso y de error actuales, rotados y comprimidos, potencialmente sensibles, de todos los dominios de ese cliente. Úselo con extrema precaución y actívelo solo si comprende el impacto en la seguridad. Se requiere el paquete acl.</strong>',
 		],
 		'logfiles_script' => [
 			'title' => 'Script personalizado al que enviar los archivos de registro',
@@ -2172,6 +2180,8 @@ Atentamente, su administrador'
 		'DELETE_EMAIL_DATA' => 'Borrar datos de e-mail del cliente.',
 		'DELETE_FTP_DATA' => 'Borrar los datos de la cuenta ftp del cliente.',
 		'REBUILD_CRON' => 'Reconstruir el archivo cron.d',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'REBUILD_LOG_ACLS' => 'Conciliando las ACL de los archivos de registro de los clientes',
 		'DELETE_DOMAIN_PDNS' => 'Borrar dominio %s de la base de datos PowerDNS',
 		'DELETE_DOMAIN_SSL' => 'Borrar archivos ssl de dominio %s'
 	],

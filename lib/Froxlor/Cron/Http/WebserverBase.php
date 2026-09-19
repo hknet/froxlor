@@ -42,7 +42,7 @@ class WebserverBase
 	public static function getVhostsToCreate()
 	{
 		$query = "SELECT `d`.*, `pd`.`domain` AS `parentdomain`, `c`.`loginname`,
-				`d`.`phpsettingid`, `c`.`adminid`, `c`.`guid`, `c`.`email`,
+				`d`.`phpsettingid`, `c`.`adminid`, `c`.`guid`, `c`.`email`, `c`.`logviewenabled`,
 				`c`.`documentroot` AS `customerroot`, `c`.`deactivated` as `customer_deactivated`,
 				`c`.`phpenabled` AS `phpenabled_customer`,
 				`d`.`phpenabled` AS `phpenabled_vhost`,

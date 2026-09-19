@@ -436,6 +436,9 @@ return [
 		'invalidmysqlhost' => 'Endereço de servidor MySQL inválido: %s',
 		'cannotuseawstatsandwebalizeratonetime' => 'Você não pode ativar Webalizer e Awstats  ao mesmo tempo, por favor, escolha uma delas',
 		'cannotwritetologfile' => 'Não pode abrir arquivo de log %s para escrita',
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_missing_tools' => 'O suporte a ACL POSIX para ficheiros de registo requer as seguintes ferramentas: %s. Instale o pacote acl do Debian/Ubuntu antes de ativar esta definição.',
+		'logfiles_acl_unsupported' => 'O diretório de ficheiros de registo configurado não existe, não é seguro ou não é suportado. Corrija o diretório de ficheiros de registo antes de ativar esta definição.',
 		'missingfields' => 'Nem todos os campos necessários estavam no campo.',
 		'accountnotexisting' => 'Esta conta não existe.',
 		'nopermissionsorinvalidid' => 'Você não tem permissões suficientes para alterar essa configuração ou um ID inválido foi dado.',
@@ -656,6 +659,11 @@ return [
 		'logfiles_directory' => [
 			'title' => 'Diretório de LOG',
 			'description' => 'Aonde os arquivos de log dever ser gravados?',
+		],
+		// Machine-translated for the customer logfile ACL feature; awaiting review by a native speaker.
+		'logfiles_acl_enabled' => [
+			'title' => 'Ativar o acesso SSH aos registos do servidor web dos clientes',
+			'description' => '<strong class="text-danger">Atenção: isto concede a cada conta Unix que partilha o GID de um cliente elegível acesso de leitura, a partir da shell, aos registos de acesso e de erro atuais, rodados e comprimidos, potencialmente sensíveis, de todos os domínios desse cliente. Utilize com extrema precaução e ative apenas se compreender o impacto na segurança. É necessário o pacote acl.</strong>',
 		],
 		'ipaddress' => [
 			'title' => 'Endereços de IP',

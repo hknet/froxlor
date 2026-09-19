@@ -38,6 +38,7 @@ const TABLE_PANEL_DOMAINS = 'panel_domains';
 const TABLE_PANEL_HTACCESS = 'panel_htaccess';
 const TABLE_PANEL_HTPASSWDS = 'panel_htpasswds';
 const TABLE_PANEL_SETTINGS = 'panel_settings';
+const TABLE_PANEL_LOG_ACL_STATE = 'panel_log_acl_state';
 const TABLE_PANEL_TASKS = 'panel_tasks';
 const TABLE_PANEL_TEMPLATES = 'panel_templates';
 const TABLE_PANEL_TRAFFIC = 'panel_traffic';

@@ -38,10 +38,16 @@ use Froxlor\Domain\Domain;
 use Froxlor\FileDir;
 use Froxlor\FroxlorLogger;
 use Froxlor\Settings;
+use Froxlor\System\LogAcl;
+use Froxlor\System\LogAclSynchronizer;
 use PDO;
 
 class TasksCron extends FroxlorCron
 {
+	protected static function createLogAclSynchronizer(): LogAclSynchronizer
+	{
+		return new LogAclSynchronizer();
+	}
 
 	/**
 	 * @throws Exception
@@ -59,6 +65,11 @@ class TasksCron extends FroxlorCron
 		");
 		$num_results = Database::num_rows();
 		$resultIDs = [];
+		$failedTaskIds = [];
+		$logAclTaskIds = [];
+		$logAclCustomerIds = [];
+		$logAclFullRun = false;
+		$logAclRequested = false;
 
 		while ($row = $result_tasks_stmt->fetch(PDO::FETCH_ASSOC)) {
 			$resultIDs[] = $row['id'];
@@ -71,7 +82,7 @@ class TasksCron extends FroxlorCron
 				/**
 				 * TYPE=1 MEANS TO REBUILD APACHE VHOSTS.CONF
 				 */
-				self::rebuildWebserverConfigs();
+				$logAclRequested = self::rebuildWebserverConfigs() || $logAclRequested;
 			} elseif ($row['type'] == TaskId::CREATE_HOME) {
 				/**
 				 * TYPE=2 MEANS TO CREATE A NEW HOME AND CHOWN
@@ -137,10 +148,45 @@ class TasksCron extends FroxlorCron
 				 * TYPE=14 regenerate libnss users/groups
 				 */
 				self::refreshUsers();
+			} elseif ($row['type'] == TaskId::REBUILD_LOG_ACLS) {
+				/**
+				 * TYPE=15 reconcile customer logfile ACLs after all filesystem and
+				 * webserver tasks in this batch have completed.
+				 */
+				$logAclTaskIds[] = $row['id'];
+				// A task carrying a customer id limits the run to that customer; a
+				// task without one means everything must converge, so it wins.
+				if (is_array($row['data']) && isset($row['data']['customerid'])) {
+					$logAclCustomerIds[] = (int)$row['data']['customerid'];
+				} else {
+					$logAclFullRun = true;
+				}
 			}
 		}
 
-		if ($num_results != 0) {
+		// Reconcile once after the full task batch. This ensures vhost generation
+		// has created its logfiles and coalesces task 15 with a vhost rebuild.
+		if ($logAclRequested || !empty($logAclTaskIds)) {
+			// A vhost rebuild may have created logfiles for any customer, so it
+			// forces the unscoped run as well.
+			$scope = ($logAclFullRun || $logAclRequested) ? [] : array_values(array_unique($logAclCustomerIds));
+			try {
+				$log_acl_sync = static::createLogAclSynchronizer();
+				if (!$log_acl_sync->sync($scope)) {
+					$failedTaskIds = array_merge($failedTaskIds, $logAclTaskIds);
+					$detail = $log_acl_sync->getLastError();
+					FroxlorLogger::getInstanceOf()->logAction(FroxlorLogger::CRON_ACTION, LOG_WARNING, 'Customer logfile ACL reconciliation did not complete successfully' . ($detail !== '' ? ': ' . $detail : ''));
+				}
+			} catch (\Throwable $e) {
+				$failedTaskIds = array_merge($failedTaskIds, $logAclTaskIds);
+				FroxlorLogger::getInstanceOf()->logAction(FroxlorLogger::CRON_ACTION, LOG_ERR, 'Customer logfile ACL reconciliation failed: ' . $e->getMessage());
+			}
+		}
+
+		// Successful tasks are deleted as usual; failed ACL tasks remain queued so
+		// missing tools or temporary filesystem failures are retried by root cron.
+		$resultIDs = array_values(array_diff($resultIDs, $failedTaskIds));
+		if ($num_results != 0 && !empty($resultIDs)) {
 			$where = [];
 			$where_data = [];
 			foreach ($resultIDs as $id) {
@@ -157,7 +203,7 @@ class TasksCron extends FroxlorCron
 		Database::query("UPDATE `" . TABLE_PANEL_SETTINGS . "` SET `value` = UNIX_TIMESTAMP() WHERE `settinggroup` = 'system' AND `varname` = 'last_tasks_run';");
 	}
 
-	private static function rebuildWebserverConfigs()
+	private static function rebuildWebserverConfigs(): bool
 	{
 		if (Settings::Get('system.webserver') == "apache2") {
 			$websrv = '\\Froxlor\\Cron\\Http\\Apache';
@@ -210,6 +256,9 @@ class TasksCron extends FroxlorCron
 		// Tell the Let's Encrypt cron it's okay to generate the certificate and enable the redirect afterwards
 		$upd_stmt = Database::prepare("UPDATE `" . TABLE_PANEL_DOMAINS . "` SET `ssl_redirect` = '3' WHERE `ssl_redirect` = '2'");
 		Database::pexecute($upd_stmt);
+		// The caller performs reconciliation after the entire task batch so ACLs
+		// are applied to the final set of freshly generated logfiles exactly once.
+		return (string)Settings::Get('system.logfiles_acl_enabled') === '1';
 	}
 
 	private static function createNewHome($row = null)
@@ -325,15 +374,98 @@ class TasksCron extends FroxlorCron
 				}
 
 				// webserver logs
-				$logsdir = FileDir::makeCorrectFile(Settings::Get('system.logfiles_directory') . '/' . $row['data']['loginname']);
+				self::deleteCustomerLogfiles((string)$row['data']['loginname']);
+			}
+		}
+	}
 
-				if (file_exists(dirname($logsdir)) && $logsdir != '/' && $logsdir != FileDir::makeCorrectDir(Settings::Get('system.logfiles_directory')) && substr($logsdir, 0, strlen(Settings::Get('system.logfiles_directory'))) == Settings::Get('system.logfiles_directory')) {
-					// build up wildcard for webX-{access,error}.log{*}
-					$logsdir .= '-*.log';
-					FroxlorLogger::getInstanceOf()->logAction(FroxlorLogger::CRON_ACTION, LOG_NOTICE, 'Running: rm -rf ' . FileDir::makeCorrectFile($logsdir));
-					FileDir::safe_exec('rm -f ' . FileDir::makeCorrectFile($logsdir));
+
+	/**
+	 * Remove the webserver logfiles of a deleted customer, including rotated and
+	 * compressed variants.
+	 *
+	 * This deliberately does not use a shell wildcard. The previous
+	 * "<loginname>-*.log" glob missed every rotated file, so "web1-access.log.1"
+	 * and "web1-access.log.2.gz" survived a deletion that was asked to remove the
+	 * customer's files. Those leftovers accumulate without limit, retain log
+	 * content of a customer that no longer exists, and are matched again by name
+	 * if the same loginname is ever created a second time - which hands the new
+	 * customer the previous one's log data.
+	 *
+	 * That last consequence is why this belongs in Froxlor regardless of whether
+	 * the logfile ACL feature is adopted: with the ACL feature the exposure is
+	 * automatic, but even without it the files are readable by anything that can
+	 * reach them, and the panel's own log viewer lists them by name.
+	 *
+	 * Loginnames may contain hyphens, so "web1-*" can also match the files of a
+	 * customer called "web1-foo". Every candidate is therefore checked against
+	 * the loginnames that still exist, and anything another customer could
+	 * legitimately own is left alone.
+	 */
+	private static function deleteCustomerLogfiles(string $loginname): void
+	{
+		if ($loginname === '') {
+			return;
+		}
+		$configured = (string)Settings::Get('system.logfiles_directory');
+		$logroot = rtrim(FileDir::makeCorrectDir($configured), '/');
+		if ($logroot === '' || $logroot === '/' || !is_dir($logroot) || is_link($logroot)) {
+			return;
+		}
+
+		// Loginnames that still exist and could therefore own a candidate file.
+		$others = [];
+		$other_stmt = Database::prepare("SELECT `loginname` FROM `" . TABLE_PANEL_CUSTOMERS . "` WHERE `loginname` <> :loginname");
+		Database::pexecute($other_stmt, ['loginname' => $loginname]);
+		while ($other = $other_stmt->fetch(PDO::FETCH_ASSOC)) {
+			$others[] = (string)$other['loginname'];
+		}
+
+		try {
+			$iterator = new \DirectoryIterator($logroot);
+		} catch (\UnexpectedValueException $e) {
+			return;
+		}
+
+		$removed = 0;
+		foreach ($iterator as $entry) {
+			if ($entry->isDot() || $entry->isLink() || !$entry->isFile()) {
+				continue;
+			}
+			$name = $entry->getFilename();
+			// Reduce a rotated or compressed variant back to its active basename.
+			$basename = LogAcl::getActiveLogfileBasename($name);
+			if ($basename === null) {
+				continue;
+			}
+			$matches = [];
+			if (preg_match('/^(.*)-(?:access|error)\.log$/D', $basename, $matches) !== 1) {
+				continue;
+			}
+			// Either "<loginname>" or "<loginname>-<domain>".
+			$owner = $matches[1];
+			if ($owner !== $loginname && strpos($owner, $loginname . '-') !== 0) {
+				continue;
+			}
+			// A longer loginname could produce the very same filename, so never
+			// delete something an existing customer might own.
+			$ambiguous = false;
+			foreach ($others as $other) {
+				if ($owner === $other || strpos($owner, $other . '-') === 0) {
+					$ambiguous = true;
+					break;
 				}
 			}
+			if ($ambiguous) {
+				FroxlorLogger::getInstanceOf()->logAction(FroxlorLogger::CRON_ACTION, LOG_WARNING, 'Keeping logfile "' . $name . '" while deleting customer "' . $loginname . '": another customer could own it');
+				continue;
+			}
+			if (@unlink($entry->getPathname())) {
+				$removed++;
+			}
+		}
+		if ($removed > 0) {
+			FroxlorLogger::getInstanceOf()->logAction(FroxlorLogger::CRON_ACTION, LOG_NOTICE, 'Removed ' . $removed . ' logfile(s) of deleted customer "' . $loginname . '"');
 		}
 	}
 
