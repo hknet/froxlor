@@ -105,7 +105,17 @@ class SImExporter
 		return $_export;
 	}
 
-	public static function import($json_str = null)
+	/**
+	 * @param string|null $json_str
+	 * @param bool $interactive true when a browser is driving this and can answer
+	 *                          a confirmation or OTP prompt
+	 * @param array $confirmations answers already given by the user, such as
+	 *                          otp_verification. The form data is built from the
+	 *                          settings file, so without this an answer submitted
+	 *                          by the browser never reaches the check that asked
+	 *                          for it and the prompt repeats forever.
+	 */
+	public static function import($json_str = null, bool $interactive = false, array $confirmations = [])
 	{
 		// decode data
 		$_data = json_decode($json_str, true);
@@ -174,7 +184,24 @@ class SImExporter
 			$settings_data = PhpHelper::loadConfigArrayDir(Froxlor::getInstallDir() . '/actions/admin/settings/');
 			Settings::loadSettingsInto($settings_data);
 
-			if (Form::processForm($settings_data, $form_data, [], null, true)) {
+			// Answers the user has already given belong in the form data, not in
+			// the settings file it was built from.
+			foreach ($confirmations as $key => $value) {
+				if (is_string($key) && $key !== '' && is_scalar($value)) {
+					$form_data[$key] = $value;
+				}
+			}
+
+			// Without a browser a confirmation dialog or an OTP prompt cannot be
+			// answered, so make the form report the problem instead of rendering a
+			// page and terminating the request.
+			Form::setNonInteractive(!$interactive);
+			try {
+				$processed = Form::processForm($settings_data, $form_data, [], null, true);
+			} finally {
+				Form::setNonInteractive(false);
+			}
+			if ($processed) {
 				// save to DB
 				Settings::Flush();
 

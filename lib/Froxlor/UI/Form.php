@@ -25,6 +25,8 @@
 
 namespace Froxlor\UI;
 
+use Exception;
+
 use Froxlor\CurrentUser;
 use Froxlor\FroxlorTwoFactorAuth;
 use Froxlor\Settings;
@@ -225,8 +227,39 @@ class Form
 		return $returnvalue;
 	}
 
+	/**
+	 * When true, a plausibility failure or a required confirmation throws instead
+	 * of rendering a page and terminating. Callers that are not driving a browser
+	 * - the API, the CLI - set this so they receive an error they can report.
+	 *
+	 * @var bool
+	 */
+	private static $nonInteractive = false;
+
+	/**
+	 * Fields that were left unchanged because their one-time password could not
+	 * be verified in this context.
+	 *
+	 * @var string[]
+	 */
+	private static $skippedFields = [];
+
+	public static function setNonInteractive(bool $nonInteractive): void
+	{
+		self::$nonInteractive = $nonInteractive;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public static function getSkippedFields(): array
+	{
+		return self::$skippedFields;
+	}
+
 	public static function processForm(&$form, &$input, $url_params = [], $part = null, bool $settings_all = false, $settings_part = null, bool $only_enabledisable = false)
 	{
+		self::$skippedFields = [];
 		if (\Froxlor\Validate\Form::validateFormDefinition($form)) {
 			$submitted_fields = [];
 			$changed_fields = [];
@@ -287,7 +320,7 @@ class Form
 											$error = $plausibility_check[1];
 											unset($plausibility_check[1]);
 											$targetname = implode(' ', $plausibility_check);
-											Response::standardError($error, $targetname);
+											Response::standardError($error, $targetname, self::$nonInteractive);
 										} elseif ($plausibility_check[0] == Check::FORMFIELDS_PLAUSIBILITY_CHECK_QUESTION) {
 											unset($plausibility_check[0]);
 											$question = $plausibility_check[1];
@@ -300,12 +333,15 @@ class Form
 												} else {
 													$filename = '';
 												}
+												if (self::$nonInteractive) {
+													throw new Exception('This change requires a confirmation that cannot be given here: ' . $question, 406);
+												}
 												HTML::askYesNo($question, $filename, array_merge($url_params, $submitted_fields, [
 													$question => $question
 												]), $targetname);
 											}
 										} else {
-											Response::standardError('plausibilitychecknotunderstood');
+											Response::standardError('plausibilitychecknotunderstood', '', self::$nonInteractive);
 										}
 									}
 								}
@@ -316,6 +352,9 @@ class Form
 									if ($do_update) {
 										// setting that requires OTP verification
 										if (empty($input['otp_verification'])) {
+											if (self::$nonInteractive) {
+												throw new Exception('This change requires a one-time password that cannot be entered here', 406);
+											}
 											// in case email 2fa is enabled, send it now
 											CurrentUser::sendOtpEmail();
 											// build up form
@@ -332,10 +371,18 @@ class Form
 											$tfa = new FroxlorTwoFactorAuth('Froxlor ' . Settings::Get('system.hostname'));
 											$result = $tfa->verifyCode(CurrentUser::getField('data_2fa'), $code, 3);
 											if (!$result) {
-												Response::standardError('otpnotvalidated');
+												Response::standardError('otpnotvalidated', '', self::$nonInteractive);
 											}
 										}
 									} else {
+										// The OTP cannot be verified here: either the system has
+										// two-factor authentication disabled, or this user has none
+										// configured. The change is dropped, as before - but record
+										// it, so a caller is not told the import applied something
+										// it discarded.
+										if ($changed_fields[$fieldname] != $fielddetails['value']) {
+											self::$skippedFields[] = $fieldname;
+										}
 										// do not update this setting
 										unset($changed_fields[$fieldname]);
 									}
