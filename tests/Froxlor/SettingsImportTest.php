@@ -24,16 +24,6 @@ class SettingsImportTest extends TestCase
 		return [Check::FORMFIELDS_PLAUSIBILITY_CHECK_ERROR, 'invalidcharacters'];
 	}
 
-	/**
-	 * Plausibility check that demands a confirmation the caller cannot give.
-	 *
-	 * @return array
-	 */
-	public static function alwaysAsks($fieldname, $fielddata, $newfieldvalue, $allnewfieldvalues)
-	{
-		return [Check::FORMFIELDS_PLAUSIBILITY_CHECK_QUESTION, 'somequestion_confirm'];
-	}
-
 	protected function tearDown(): void
 	{
 		Form::setNonInteractive(false);
@@ -51,31 +41,17 @@ class SettingsImportTest extends TestCase
 		Form::processForm($form, $input, [], null, true);
 	}
 
-	public function testAConfirmationRequestThrowsWhenNobodyCanAnswerIt(): void
+	public function testAnInvalidValueThrowsInsteadOfRenderingWhenNobodyIsWatching(): void
 	{
-		// No setting raises a plausibility question today, so this drives the
-		// branch with a check of its own. It would loop exactly like the OTP one.
-		$form = $this->formWith([self::class, 'alwaysAsks']);
-		$input = ['somefield' => 'newvalue'];
+		// The most likely failure for a scripted import: a value the field
+		// validation rejects. This runs before any plausibility check.
+		$form = $this->formWith(null);
+		$form['groups']['testgroup']['fields']['somefield']['type'] = 'int';
+		$input = ['somefield' => 'not-a-number'];
 
 		Form::setNonInteractive(true);
-		try {
-			Form::processForm($form, $input, [], null, true);
-			$this->fail('a question nobody can answer must not be asked into the void');
-		} catch (Exception $e) {
-			$this->assertStringContainsString('confirmation', $e->getMessage());
-		}
-	}
-
-	public function testAnAnswerAlreadyGivenSatisfiesTheQuestion(): void
-	{
-		// The same form, but the answer is present in the input - which is what
-		// passing confirmations into the import achieves. It must not ask again.
-		$form = $this->formWith([self::class, 'alwaysAsks']);
-		$input = ['somefield' => 'newvalue', 'somequestion_confirm' => 'somequestion_confirm'];
-
-		Form::setNonInteractive(true);
-		$this->assertNotFalse(Form::processForm($form, $input, [], null, true));
+		$this->expectException(Exception::class);
+		Form::processForm($form, $input, [], null, true);
 	}
 
 	public function testAnUnverifiableOtpSettingIsReportedAsSkipped(): void
@@ -120,6 +96,29 @@ class SettingsImportTest extends TestCase
 		} finally {
 			Database::query('ROLLBACK');
 			$this->restoreLogging($logger);
+		}
+	}
+
+	public function testAnApiClientCannotAskForTheRenderingMode(): void
+	{
+		global $admin_userdata;
+
+		// A non-internal call must report, whatever the caller puts in the
+		// params. If "interactive" were still honoured this would render a page
+		// and exit(), taking the test runner with it.
+		$settings = $this->exportedSettings();
+		$settings['session.sessiontimeout'] = 'not-a-number';
+		$settings = $this->resign($settings);
+
+		Database::query('START TRANSACTION');
+		try {
+			$this->expectException(Exception::class);
+			Froxlor::getLocal($admin_userdata, [
+				'json_str' => json_encode($settings),
+				'interactive' => true
+			])->importSettings();
+		} finally {
+			Database::query('ROLLBACK');
 		}
 	}
 

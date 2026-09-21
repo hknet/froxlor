@@ -288,7 +288,7 @@ class Form
 								$newfieldvalue = self::getFormFieldData($fieldname, $fielddetails, $input);
 								if ($newfieldvalue != $fielddetails['value']) {
 									if (($error = \Froxlor\Validate\Form::validateFormField($fieldname, $fielddetails, $newfieldvalue)) !== true) {
-										Response::standardError($error, $fieldname);
+										Response::standardError($error, $fieldname, self::$nonInteractive);
 									} else {
 										$changed_fields[$fieldname] = $newfieldvalue;
 									}
@@ -332,9 +332,6 @@ class Form
 													unset($url_params['filename']);
 												} else {
 													$filename = '';
-												}
-												if (self::$nonInteractive) {
-													throw new Exception('This change requires a confirmation that cannot be given here: ' . $question, 406);
 												}
 												HTML::askYesNo($question, $filename, array_merge($url_params, $submitted_fields, [
 													$question => $question
@@ -380,9 +377,7 @@ class Form
 										// configured. The change is dropped, as before - but record
 										// it, so a caller is not told the import applied something
 										// it discarded.
-										if ($changed_fields[$fieldname] != $fielddetails['value']) {
-											self::$skippedFields[] = $fieldname;
-										}
+										self::$skippedFields[] = $fieldname;
 										// do not update this setting
 										unset($changed_fields[$fieldname]);
 									}
@@ -404,7 +399,7 @@ class Form
 									if (($saved_field = self::saveFormField($fieldname, $fielddetails, self::manipulateFormFieldData($fieldname, $fielddetails, $changed_fields[$fieldname]))) !== false) {
 										$saved_fields = array_merge($saved_fields, $saved_field);
 									} else {
-										Response::standardError('errorwhensaving', $fieldname);
+										Response::standardError('errorwhensaving', $fieldname, self::$nonInteractive);
 									}
 								}
 							}

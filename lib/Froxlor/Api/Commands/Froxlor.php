@@ -135,12 +135,10 @@ class Froxlor extends ApiCommand
 	 *
 	 * @param string $json_str
 	 *            content of exported froxlor-settings json file
-	 * @param bool $interactive
-	 *            optional, default false; true when a browser is driving the
-	 *            import and can answer a confirmation or OTP prompt
-	 * @param array $confirmations
-	 *            optional, answers already given by the user, for example
-	 *            otp_verification
+	 * @param string $otp_verification
+	 *            optional, a one-time password the user has already entered; the
+	 *            form data is built from the settings file, so without this the
+	 *            check that asked for it never sees the answer
 	 *
 	 * @access admin
 	 * @return string json-encoded bool
@@ -150,12 +148,13 @@ class Froxlor extends ApiCommand
 	{
 		if ($this->isAdmin() && $this->getUserDetail('change_serversettings')) {
 			$json_str = $this->getParam('json_str');
-			// Only the panel can answer a confirmation or OTP prompt; every other
-			// caller gets the problem reported back instead.
-			$interactive = (bool)$this->getParam('interactive', true, false);
-			$confirmations = $this->getParam('confirmations', true, []);
+			// Only the panel can answer an OTP prompt, and it is the only caller
+			// that reaches this internally. Everything else gets the problem
+			// reported back instead of a rendered page.
+			$interactive = $this->isInternal();
+			$otp = (string)$this->getParam('otp_verification', true, '');
 			try {
-				SImExporter::import($json_str, $interactive, is_array($confirmations) ? $confirmations : []);
+				SImExporter::import($json_str, $interactive, $otp);
 				// Logged only once the import actually succeeded; logging before
 				// the attempt recorded failed imports as successful ones.
 				$this->logger()->logAction(FroxlorLogger::ADM_ACTION, LOG_WARNING, "User " . $this->getUserDetail('loginname') . " imported settings");

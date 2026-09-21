@@ -313,25 +313,14 @@ if ($page == 'overview' && $userinfo['change_serversettings'] == '1') {
 		}
 
 		try {
-			// Carry anything the user has already confirmed into the import,
-			// otherwise the check that asked for it never sees the answer and asks
-			// again. That is the OTP code today; no setting currently raises a
-			// plausibility question, but one would loop the same way, so an
-			// accepted answer to it is carried too.
-			$confirmations = [];
-			foreach ($_POST as $post_key => $post_value) {
-				if (is_string($post_key) && is_scalar($post_value)
-					&& ($post_key === 'otp_verification' || substr($post_key, -8) === '_confirm')
-				) {
-					$confirmations[$post_key] = $post_value;
-				}
-			}
-
+			// The third argument marks this as an internal call, which is what tells
+			// the import a browser is driving it and can answer an OTP prompt.
+			// Carry the code the user has already entered, otherwise the check that
+			// asked for it never sees the answer and asks again.
 			Froxlor::getLocal($userinfo, [
 				'json_str' => $imp_content,
-				'interactive' => true,
-				'confirmations' => $confirmations
-			])->importSettings();
+				'otp_verification' => Request::post('otp_verification', '')
+			], true)->importSettings();
 		} catch (Exception $e) {
 			unset($_SESSION['settings_import_content']);
 			Response::dynamicError($e->getMessage());

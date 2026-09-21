@@ -109,13 +109,13 @@ class SImExporter
 	 * @param string|null $json_str
 	 * @param bool $interactive true when a browser is driving this and can answer
 	 *                          a confirmation or OTP prompt
-	 * @param array $confirmations answers already given by the user, such as
-	 *                          otp_verification. The form data is built from the
-	 *                          settings file, so without this an answer submitted
-	 *                          by the browser never reaches the check that asked
-	 *                          for it and the prompt repeats forever.
+	 * @param string $otp_verification a one-time password the user has already
+	 *                          entered. The form data is built from the settings
+	 *                          file, so without this the answer submitted by the
+	 *                          browser never reaches the check that asked for it
+	 *                          and the prompt repeats forever.
 	 */
-	public static function import($json_str = null, bool $interactive = false, array $confirmations = [])
+	public static function import($json_str = null, bool $interactive = false, string $otp_verification = '')
 	{
 		// decode data
 		$_data = json_decode($json_str, true);
@@ -184,12 +184,10 @@ class SImExporter
 			$settings_data = PhpHelper::loadConfigArrayDir(Froxlor::getInstallDir() . '/actions/admin/settings/');
 			Settings::loadSettingsInto($settings_data);
 
-			// Answers the user has already given belong in the form data, not in
-			// the settings file it was built from.
-			foreach ($confirmations as $key => $value) {
-				if (is_string($key) && $key !== '' && is_scalar($value)) {
-					$form_data[$key] = $value;
-				}
+			// An answer the user has already given belongs in the form data, not
+			// in the settings file it was built from.
+			if ($otp_verification !== '') {
+				$form_data['otp_verification'] = $otp_verification;
 			}
 
 			// Without a browser a confirmation dialog or an OTP prompt cannot be
